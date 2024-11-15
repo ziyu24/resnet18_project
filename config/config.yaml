@@ -1,0 +1,44 @@
+---
+#Created on 11 14, 2024
+#@author: <Cui>
+#@bref: 网络的各种配置
+
+
+# 数据参数
+data:
+  download: false
+  num_classes: 23
+
+# 网络参数
+net:
+  height: 32
+  width: 32
+  input_size: 1024
+#  hidden_layer_size: 128
+#  output_size: 10
+#  activation_function: ReLU
+
+# 优化器参数
+optimizer:
+  type: Adam
+  lr: 0.001
+#  weight_decay: 0.0001
+
+# 训练参数
+train:
+  batch_size: 15
+  num_workers: 2
+  num_epochs: 500
+  preference_accuracy: 0.9 #模型想要训练的精度
+  drop_last: true
+  use_save_model: false  # 使用之前训练的模型继续训练，如果是新的模型，则设置为 false，旧的模型，则设置为 true
+  save_model: true
+  save_model_freq: 1
+  save_check_point: true
+  save_check_point_freq: 1
+
+val:
+  batch_size: 15
+  num_workers: 2
+  use_save_model: true
+  drop_last: true
