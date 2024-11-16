@@ -35,14 +35,19 @@ class Config:
         project_dir = config_dir + '/../..'  # 这里是 project 目录的路径
 
         self._config_local['project_dir'] = project_dir
+
         self._config_local['dataset_train_dir'] = project_dir + '/data/dataset/train'
         self._config_local['dataset_test_dir'] = project_dir + '/data/dataset/test'
         self._config_local['dataset_val_dir'] = project_dir + '/data/dataset/valid'
-        self._config_local['train_check_point_save_path'] = project_dir + '/data/model/train_checkpoint_self.pth'
-        self._config_local['train_model_save_path'] = project_dir + '/data/model/train_model_self.pt'
-        self._config_local['val_check_point_save_path'] = project_dir + '/data/model/val_checkpoint_self.pth'
-        self._config_local['val_model_save_path'] = project_dir + '/data/model/val_model_self.pt'
         self._config_local['test_data_dir'] = project_dir + '/data/test'
+
+        self._config_local['train_check_point_save_path'] = project_dir + '/data/model_self/train_checkpoint_self.pth'
+        self._config_local['train_model_save_path'] = project_dir + '/data/model_self/train_model_self.pth'
+        self._config_local['val_check_point_save_path'] = project_dir + '/data/model_self/val_checkpoint_self.pth'
+        self._config_local['val_model_save_path'] = project_dir + '/data/model_self/val_model_self.pth'
+
+        self._config_local['onnx_save_path'] = project_dir + '/data/onnx/onnx_resnet18.onnx'
+
 
     def _validate_yaml(self):
         """验证 YAML 文件格式"""

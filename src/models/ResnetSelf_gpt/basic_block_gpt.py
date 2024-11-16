@@ -4,21 +4,14 @@ Created on 11 15, 2024
 @bref: 通过 torch.nn，手动实现残差块类
 """
 
-import torch
-from torch import nn
-from torchvision import models
-
-from project.src.common.config import config_yaml
-
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
 
 # 定义残差块 (Residual Block)
-class BasicBlock(nn.Module):
+class BasicBlock_gpt(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
-        super(BasicBlock, self).__init__()
+        super(BasicBlock_gpt, self).__init__()
 
         # 第一层卷积，步幅为stride
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=3, stride=stride, padding=1, bias=False)
@@ -49,8 +42,6 @@ class BasicBlock(nn.Module):
         out = F.relu(out)
         return out
 
-
-
-
-
-
+if __name__ == '__main__':
+    model = BasicBlock_gpt(3, 3)
+    print(model)

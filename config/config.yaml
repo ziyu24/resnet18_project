@@ -6,14 +6,14 @@
 
 # 数据参数
 data:
+  height: 224
+  width: 224
+  input_size: 50176
   download: false
   num_classes: 23
 
 # 网络参数
 net:
-  height: 32
-  width: 32
-  input_size: 1024
 #  hidden_layer_size: 128
 #  output_size: 10
 #  activation_function: ReLU
@@ -26,19 +26,21 @@ optimizer:
 
 # 训练参数
 train:
-  batch_size: 15
+  batch_size: 20
   num_workers: 2
   num_epochs: 500
-  preference_accuracy: 0.9 #模型想要训练的精度
   drop_last: true
-  use_save_model: false  # 使用之前训练的模型继续训练，如果是新的模型，则设置为 false，旧的模型，则设置为 true
+  use_save_model: true  # 使用之前训练的模型继续训练，如果是新的模型，则设置为 false，旧的模型，则设置为 true
+  not_freeze_conv: true # 使用预训练模型后，是否冻结卷积层
+  not_freeze_fn: false # 使用预训练模型后，是否冻结全连接层
   save_model: true
   save_model_freq: 1
   save_check_point: true
   save_check_point_freq: 1
 
 val:
-  batch_size: 15
+  preference_accuracy: 0.9 #模型想要训练的精度，达到此进度，模型训练将会结束
+  batch_size: 20
   num_workers: 2
   use_save_model: true
   drop_last: true

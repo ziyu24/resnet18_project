@@ -35,18 +35,18 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
     if use_save_model:
         print("Load save model and train, check point path is: {}".format(config_yaml['train_check_point_save_path']))
         try:
-            model, optimizer, start_epoch, best_loss = load_checkpoint(model, optimizer,
-                                                                       config_yaml['train_check_point_save_path'])
+            model, optimizer, start_epoch, last_train_loss, best_val_loss = (
+                load_checkpoint(model, optimizer, config_yaml['train_check_point_save_path']))
         except FileNotFoundError:
             print("No checkpoint found, path is: {}, "
                   "starting fresh.".format(config_yaml['train_check_point_save_path']))
             start_epoch = 0
-            best_loss = float('inf')
+            best_val_loss = float('inf')
     else:
         print("No use save model, begin new model train, "
               "check point path is: {}".format(config_yaml['train_check_point_save_path']))
         start_epoch = 0
-        best_loss = float('inf')
+        best_val_loss = float('inf')
 
     for epoch in range(start_epoch, num_epochs):
         # 训练一个 epoch
@@ -56,11 +56,12 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
         val_loss, val_accuracy = evaluate(model, val_loader, loss_fn, device)
 
         # 达到需求精度时，保存模型和检查点，退出训练
-        if val_accuracy > config_yaml['train']['preference_accuracy']:
+        if val_accuracy > config_yaml['val']['preference_accuracy']:
+            best_val_loss = val_loss
             print(f"model evaluate Accuracy: {val_accuracy}, "
                   f"preference Accuracy: {config_yaml['train']['preference_accuracy']}, stop train")
             save_model(model, config_yaml['val_model_save_path'], "preference_model")
-            save_checkpoint(model, optimizer, epoch, val_loss, config_yaml['val_check_point_save_path'],
+            save_checkpoint(model, optimizer, epoch, val_loss, best_val_loss, config_yaml['val_check_point_save_path'],
                             "preference_checkpoint")
             return
 
@@ -69,12 +70,12 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
               f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy * 100:.4f}%")
 
         # 如果验证损失是最佳的，保存模型
-        print(f"evaluate model, Epoch [{epoch}], val_loss[{val_loss}], best_loss[{best_loss}]")
-        if val_loss < best_loss:
-            best_loss = val_loss
-            print(f"New best validation loss: {val_loss:.4f}, saved checkpoint and model")
+        print(f"evaluate model, Epoch [{epoch}], val_loss[{val_loss}], best_loss[{best_val_loss}]")
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            print(f"==============new best validation loss: {val_loss:.4f}, saved checkpoint and model")
             save_model(model, config_yaml['val_model_save_path'], "val_model")
-            save_checkpoint(model, optimizer, epoch, val_loss, config_yaml['val_check_point_save_path'],
+            save_checkpoint(model, optimizer, epoch, val_loss, best_val_loss, config_yaml['val_check_point_save_path'],
                             "val_checkpoint")
 
         # 每个 epoch 保存训练的模型
@@ -84,7 +85,7 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
         # 每个 epoch 保存训练的检查点
         if (config_yaml['train']['save_check_point'] and
                 (((epoch + 1) % config_yaml['train']['save_check_point_freq']) == 0)):
-            save_checkpoint(model, optimizer, epoch, val_loss,
+            save_checkpoint(model, optimizer, epoch, val_loss, best_val_loss,
                             config_yaml['train_check_point_save_path'], "train_checkpoint")
 
 
@@ -148,7 +149,7 @@ def save_model(model, model_save_path, log_info):
     torch.save(model.state_dict(), model_save_path)
 
 
-def save_checkpoint(model, optimizer, epoch, loss, save_checkpoint_path, log_info):
+def save_checkpoint(model, optimizer, epoch, loss, best_val_loss, save_checkpoint_path, log_info):
     """
     保存模型和优化器的状态，包含当前训练的 epoch 和 loss，用于恢复训练。
 
@@ -156,6 +157,7 @@ def save_checkpoint(model, optimizer, epoch, loss, save_checkpoint_path, log_inf
     :param optimizer: PyTorch 优化器，保存优化器的状态（state_dict）。
     :param epoch: 当前训练的 epoch 数，方便恢复训练时从哪里开始。
     :param loss: 当前训练的损失值，用于恢复训练时的损失。
+    :param best_val_loss: 当前训练得到的最优的评估 loss，加入这个，就不会重写最优秀的 val 校验出来的 model
     :param save_checkpoint_path: 保存检查点的文件路径，通常是一个 `.pth` 或 `.pt` 后缀的文件。
     :param log_info: 打印的日志信息
     """
@@ -164,7 +166,8 @@ def save_checkpoint(model, optimizer, epoch, loss, save_checkpoint_path, log_inf
         'epoch': epoch,  # 当前训练的 epoch 数
         'model_state_dict': model.state_dict(),  # 保存模型的参数（模型的权重）
         'optimizer_state_dict': optimizer.state_dict(),  # 保存优化器的参数（如学习率、动量等）
-        'loss': loss  # 当前的损失值，可以用来恢复训练状态
+        'loss': loss,  # 当前的损失值，可以用来恢复训练状态
+        'best_val_loss': best_val_loss  # 当前最优训练 loss
     }
 
     # 使用 torch.save 保存检查点到指定的文件
@@ -193,11 +196,12 @@ def load_checkpoint(model, optimizer, save_model_path):
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
     # 获取保存的 epoch 和损失值
-    epoch = checkpoint['epoch']
+    epoch = checkpoint['epoch'] + 1  # 加上 1 是因为保存的 epoch 已经训练了，需要从下一个 epoch 训练
     loss = checkpoint['loss']
+    best_val_loss = checkpoint['best_val_loss']
 
     # 打印加载成功的提示信息，告诉用户从哪个 epoch 恢复训练
     print(f"Checkpoint loaded from {save_model_path}. Starting from epoch {epoch}.")
 
     # 返回加载后的模型、优化器、epoch 和损失值
-    return model, optimizer, epoch, loss
+    return model, optimizer, epoch, loss, best_val_loss

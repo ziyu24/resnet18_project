@@ -8,13 +8,13 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from project.src.models.ResnetSelf.basic_block import BasicBlock
+from project.src.models.ResnetSelf_gpt.basic_block_gpt import BasicBlock_gpt
 
 
 # 定义 ResNet-18 网络
-class ResNet18(nn.Module):
+class ResNet18_gpt(nn.Module):
     def __init__(self, num_classes=1000):
-        super(ResNet18, self).__init__()
+        super(ResNet18_gpt, self).__init__()
 
         # 初始卷积层 + 批归一化 + 最大池化
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)  # (3x224x224) -> (64x112x112)
@@ -36,34 +36,48 @@ class ResNet18(nn.Module):
     def _make_layer(self, in_channels, out_channels, num_blocks, stride):
         # 用于构建每一层的残差块
         layers = []
-        layers.append(BasicBlock(in_channels, out_channels, stride))  # 第一块需要改变输入通道数或者步幅
+        layers.append(BasicBlock_gpt(in_channels, out_channels, stride))  # 第一块需要改变输入通道数或者步幅
         for _ in range(1, num_blocks):
-            layers.append(BasicBlock(out_channels, out_channels))  # 后续的块只需要改变通道数
+            layers.append(BasicBlock_gpt(out_channels, out_channels))  # 后续的块只需要改变通道数
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        # print("x============input: {}".format(x.shape))
         # 初始的卷积和池化层
         x = F.relu(self.bn1(self.conv1(x)))
+        # print("x============conv1{}".format(x.shape))
         x = self.maxpool(x)
+        # print("x============maxpool{}".format(x.shape))
 
         # 通过各个残差块层
         x = self.layer1(x)
+        # print("x============layer1{}".format(x.shape))
         x = self.layer2(x)
+        # print("x============layer2{}".format(x.shape))
         x = self.layer3(x)
+        # print("x============layer3{}".format(x.shape))
         x = self.layer4(x)
 
+        # print("x============layer4:{}".format(x.shape))
+        # print("x============layer4:{}".format(x))
         # 全局平均池化
         x = self.avg_pool(x)
+        # print("x============ave_pool:{}".format(x.shape))
+        # print("x============ave_pool:{}".format(x))
         x = torch.flatten(x, 1)  # 展平成一维向量
+        # print("x============flatten:{}".format(x.shape))
+        # print("x============flatten:{}".format(x))
 
         # 全连接层
         x = self.fc(x)
+        # print("x============fc:{}".format(x.shape))
+        # print("x============fc:{}".format(x))
         return x
 
 
 if __name__ == '__main__':
     # 创建 ResNet-18 模型
-    model = ResNet18(num_classes=1000)
+    model = ResNet18_gpt(num_classes=1000)
 
     # 打印模型架构
     print(model)

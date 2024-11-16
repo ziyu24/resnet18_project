@@ -7,11 +7,13 @@ from torch import nn
 from torchvision import models
 from torchvision.models import ResNet18_Weights
 
-from project.src.models.ResnetSelf.resnet18_constructor import ResNet18
+from project.src.common.config import config_yaml
+from project.src.models.ResnetSelf_gpt.resnet18_constructor_gpt import ResNet18_gpt
+from project.src.models.ResnetSelf_self.resnet18_constructor_self import ResNet18_self
 
 
 def get_resnet18_self(num_classes=1000):
-    return ResNet18(num_classes)
+    return ResNet18_self(num_classes)
 
 
 def get_pretrained_model(num_classes=1000):
@@ -51,9 +53,9 @@ def _load_pretrained_model(model_self, pretrained=True, num_classes=1000, freeze
         # 根据需要冻结卷积层（特征提取部分），只训练全连接层
         if freeze_backbone:
             for param in model_self.parameters():
-                param.requires_grad = False  # 冻结卷积层参数
+                param.requires_grad = config_yaml['train']['not_freeze_conv']  # 是否冻结卷积层参数
             for param in model_self.fc.parameters():
-                param.requires_grad = True  # 解冻全连接层
+                param.requires_grad = config_yaml['train']['not_freeze_fn']  # 是否冻结全连接层
 
     else:
         print("Training from scratch.")
