@@ -3,11 +3,9 @@ Created on 11 14, 2024
 @author: <Cui>
 @bref: 加载配置文件
 """
-import os
 import yaml
 
-# yaml 文件绝对路径
-config_yaml_path = os.path.abspath(os.path.join(os.path.dirname(__file__))) + '/../../config/config.yaml'
+from project.src.common.config_resnet18 import *
 
 
 class Config:
@@ -31,22 +29,20 @@ class Config:
     def _config_project_path(self):
         """设置项目的路径，这些路径在 yaml 中配置不了"""
 
-        config_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-        project_dir = config_dir + '/../..'  # 这里是 project 目录的路径
-
         self._config_local['project_dir'] = project_dir
 
-        self._config_local['dataset_train_dir'] = project_dir + '/data/dataset/train'
-        self._config_local['dataset_test_dir'] = project_dir + '/data/dataset/test'
-        self._config_local['dataset_val_dir'] = project_dir + '/data/dataset/valid'
-        self._config_local['test_data_dir'] = project_dir + '/data/test'
+        self._config_local['dataset_train_dir'] = data_set_train_dir
+        self._config_local['dataset_test_dir'] = data_set_test_dir
+        self._config_local['dataset_val_dir'] = data_set_val_dir
+        self._config_local['temp_test_data_dir'] = temp_test_dir
 
-        self._config_local['train_check_point_save_path'] = project_dir + '/data/model_self/train_checkpoint_self.pth'
-        self._config_local['train_model_save_path'] = project_dir + '/data/model_self/train_model_self.pth'
-        self._config_local['val_check_point_save_path'] = project_dir + '/data/model_self/val_checkpoint_self.pth'
-        self._config_local['val_model_save_path'] = project_dir + '/data/model_self/val_model_self.pth'
+        self._config_local['train_check_point_save_path'] = (train_model_dir + 'train_checkpoint' +
+                                                             train_model_name_suffix)
+        self._config_local['train_model_save_path'] = train_model_dir + 'train_model' + train_model_name_suffix
+        self._config_local['val_check_point_save_path'] = train_model_dir + 'val_checkpoint' + train_model_name_suffix
+        self._config_local['val_model_save_path'] = train_model_dir + 'val_model' + train_model_name_suffix
 
-        self._config_local['onnx_save_path'] = project_dir + '/data/onnx/onnx_resnet18.onnx'
+        self._config_local['onnx_save_path'] = onnx_dir
 
 
     def _validate_yaml(self):

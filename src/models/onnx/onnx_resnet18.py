@@ -12,11 +12,11 @@ from torchvision import transforms
 
 from project.src.common.config import config_yaml
 from project.src.models.onnx.onnx_common import export_pth_to_onnx_common, infer_with_onnx_common
-from project.src.models.resnet18_self import get_pretrained_model
+from project.src.models.resnet18_self import get_pretrained_model_self
 
 
 def export_resnet18_pth_to_onnx(input_size=(1, 3, 224, 224)):
-    model = get_pretrained_model(config_yaml['data']['num_classes'])
+    model = get_pretrained_model_self(config_yaml['data']['num_classes'])
     export_pth_to_onnx_common(model, config_yaml['val_model_save_path'], config_yaml['onnx_save_path'], input_size)
 
 

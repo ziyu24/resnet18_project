@@ -8,15 +8,13 @@ import torch
 from torch import nn
 
 from project.src.common.config import config_yaml
-from project.src.val import evaluate
+from project.src.val import evaluate_one_epoch
 
 
 def train(model, train_loader, val_loader,
           use_save_model=config_yaml['train']['use_save_model'],
           num_epochs=config_yaml['train']['num_epochs'],
-          lr=config_yaml['optimizer']['lr'],
-          val_model_save_path=config_yaml['val_model_save_path'],
-          val_check_point_save_path=config_yaml['val_check_point_save_path']):
+          lr=config_yaml['optimizer']['lr']):
     """
     训练函数: 训练一个模型
     """
@@ -25,21 +23,20 @@ def train(model, train_loader, val_loader,
     loss_fn = nn.CrossEntropyLoss()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num_epochs, use_save_model,
-                val_model_save_path, val_check_point_save_path)
+    train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num_epochs, use_save_model)
 
 
-def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num_epochs, use_save_model,
-                val_model_save_path, val_check_point_save_path):
+def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num_epochs, use_save_model):
     # 如果检查点存在，加载它
     if use_save_model:
-        print("Load save model and train, check point path is: {}".format(config_yaml['train_check_point_save_path']))
+        print("Load save model and train, check point path is: {}".format(
+            config_yaml['train_check_point_save_path']))
         try:
             model, optimizer, start_epoch, last_train_loss, best_val_loss = (
                 load_checkpoint(model, optimizer, config_yaml['train_check_point_save_path']))
         except FileNotFoundError:
-            print("No checkpoint found, path is: {}, "
-                  "starting fresh.".format(config_yaml['train_check_point_save_path']))
+            print("No checkpoint found, path is: {}, ""starting fresh.".format(
+                config_yaml['train_check_point_save_path']))
             start_epoch = 0
             best_val_loss = float('inf')
     else:
@@ -53,7 +50,7 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
         train_one_epoch(model, optimizer, train_loader, loss_fn, device, epoch)
 
         # 计算验证集损失
-        val_loss, val_accuracy = evaluate(model, val_loader, loss_fn, device)
+        val_loss, val_accuracy = evaluate_one_epoch(model, val_loader, loss_fn, device, epoch)
 
         # 达到需求精度时，保存模型和检查点，退出训练
         if val_accuracy > config_yaml['val']['preference_accuracy']:
@@ -65,18 +62,14 @@ def train_model(model, train_loader, val_loader, optimizer, loss_fn, device, num
                             "preference_checkpoint")
             return
 
-        # 打印当前的验证损失和精度
-        print(f"evaluate model, Epoch [{epoch}], "
-              f"Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy * 100:.4f}%")
-
         # 如果验证损失是最佳的，保存模型
         print(f"evaluate model, Epoch [{epoch}], val_loss[{val_loss}], best_loss[{best_val_loss}]")
         if val_loss < best_val_loss:
             best_val_loss = val_loss
-            print(f"==============new best validation loss: {val_loss:.4f}, saved checkpoint and model")
+            print(f"============== new best validation loss: {val_loss:.4f}, saved checkpoint and model")
             save_model(model, config_yaml['val_model_save_path'], "val_model")
-            save_checkpoint(model, optimizer, epoch, val_loss, best_val_loss, config_yaml['val_check_point_save_path'],
-                            "val_checkpoint")
+            save_checkpoint(model, optimizer, epoch, val_loss, best_val_loss,
+                            config_yaml['val_check_point_save_path'],"val_checkpoint")
 
         # 每个 epoch 保存训练的模型
         if config_yaml['train']['save_model'] and (((epoch + 1) % config_yaml['train']['save_model_freq']) == 0):

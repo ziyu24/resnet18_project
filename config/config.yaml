@@ -29,10 +29,13 @@ train:
   batch_size: 20
   num_workers: 2
   num_epochs: 500
+
   drop_last: true
   use_save_model: true  # 使用之前训练的模型继续训练，如果是新的模型，则设置为 false，旧的模型，则设置为 true
+
   not_freeze_conv: true # 使用预训练模型后，是否冻结卷积层
-  not_freeze_fn: false # 使用预训练模型后，是否冻结全连接层
+  not_freeze_fn: true # 使用预训练模型后，是否冻结全连接层
+
   save_model: true
   save_model_freq: 1
   save_check_point: true
