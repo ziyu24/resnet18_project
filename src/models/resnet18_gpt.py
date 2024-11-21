@@ -4,7 +4,7 @@ Created on 11 17, 2024
 @bref: 获取手动构建的 resnet18_gpt 类
 """
 
-from project.src.models.ResnetSelf_self.resnet18_constructor_self import ResNet18_self
+from project.src.models.resnetSelf_self.resnet18_constructor_self import ResNet18_self
 from project.src.models.pretrained.pretrain_model import load_pretrained_model
 
 

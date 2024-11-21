@@ -7,7 +7,7 @@ Created on 11 16, 2024
 from torch import nn, flatten
 import torch.nn.functional as F
 
-from project.src.models.ResnetSelf_self.basic_block_self import BasicBlock_self
+from project.src.models.resnetSelf_self.basic_block_self import BasicBlock_self
 
 
 class ResNet18_self(nn.Module):

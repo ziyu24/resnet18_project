@@ -8,7 +8,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-from project.src.models.ResnetSelf_gpt.basic_block_gpt import BasicBlock_gpt
+from project.src.models.resnetSelf_gpt.basic_block_gpt import BasicBlock_gpt
 
 
 # 定义 ResNet-18 网络

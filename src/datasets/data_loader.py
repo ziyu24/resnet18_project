@@ -23,7 +23,7 @@ def get_data_loader_train():
 
 
 def get_data_loader_val():
-    dataset_val = DatasetSelf(config_yaml['dataset_test_dir'], transform_val)
+    dataset_val = DatasetSelf(config_yaml['dataset_val_dir'], transform_val)
 
     data_loader_val = DataLoader(dataset=dataset_val,
                                  batch_size=config_yaml['val']['batch_size'],

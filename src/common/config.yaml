@@ -45,5 +45,7 @@ val:
   preference_accuracy: 0.9 #模型想要训练的精度，达到此进度，模型训练将会结束
   batch_size: 20
   num_workers: 2
-  use_save_model: true
   drop_last: true
+
+test:
+  use_save_model: true  # 测试阶段，是否使用保存的模型来测试
